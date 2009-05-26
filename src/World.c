@@ -25,14 +25,20 @@ void World_setWorldObject(WorldObject* world)
 {
 	currentworld = world;
 }
-void World_flush()
+void World_refresh()
 {
+	assert(currentworld);
 	CollisionList_clear(currentworld->collisionlist);
 }
 
 void World_addGameObject(GameObject* object)
 {
 	assert(object);
-	GameObjectList_addLast(currentworld->objectlist, object);
+	assert(currentworld);
+	GameObjectList_remove(currentworld->objectlist, object);
 }
 
+void World_removeGameObject(GameObject* object)
+{
+	assert(object);
+}

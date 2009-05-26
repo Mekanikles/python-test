@@ -1,5 +1,4 @@
 #include "GameObject.h"
-#include "stdlib.h"
 
 
 struct GameObject* GameObject_new()
@@ -12,6 +11,7 @@ struct GameObject* GameObject_new()
 	obj->vy=0;
 	obj->w=32;
 	obj->h=16;
+	
 	return obj;
 }
 
@@ -24,7 +24,7 @@ struct GameObjectList* GameObjectList_new()
 	return list;
 }
 
-void GameObjectList_delete(struct GameObjectList* list)
+void GameObjectList_destroy(struct GameObjectList* list)
 {	
 	struct GameObject* p = list->first;
 	struct GameObject* t = NULL;
@@ -61,5 +61,28 @@ void GameObjectList_addLast(struct GameObjectList* list, struct GameObject* obj)
 		list->last = obj;	
 	}
 }
+
+void GameObjectList_remove(struct GameObjectList* list, struct GameObject* obj)
+{
+	assert(list->first);
+	assert(obj);
+	if (obj->next != NULL)
+	{	
+		obj->next->prev = obj->prev;
+	}
+	if (obj->prev != NULL)
+	{	
+		obj->prev->next = obj->next;
+	}
+	if (list->first == obj)
+	{
+		list->first = obj->next;
+	}
+	if (list->last == obj)
+	{
+		list->last = obj->prev;
+	}
+}
+
 
 

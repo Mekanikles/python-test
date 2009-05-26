@@ -1,6 +1,8 @@
 #ifndef SAGEINTERFACE_H_
 #define SAGEINTERFACE_H_
 
+#include "Python.h"
+
 struct GameObject;
 
 typedef struct Sage_GameObject

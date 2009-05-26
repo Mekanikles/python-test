@@ -4,26 +4,27 @@
 #include "Globals.h" 
 #include "GameObject.h"
 
-struct Collision
+typedef struct Collision
 {
 	struct Collision* next;
 	struct Collision* prev;
 
 	struct GameObject* obj1;
 	struct GameObject* obj2;
-};
+} Collision;
 
 struct Collision* Collision_new();
 
 
-struct CollisionList
+typedef struct CollisionList
 {
 	struct Collision* first;
 	struct Collision* last;
-};
+} CollisionList;
 
 struct CollisionList* CollisionList_new();
-void CollisionList_delete(struct CollisionList* list);
+void CollisionList_destroy(struct CollisionList* list);
+void CollisionList_clear(struct CollisionList* list);
 void CollisionList_addLast(struct CollisionList* list, struct Collision* obj);
 
 

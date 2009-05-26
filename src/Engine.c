@@ -75,7 +75,7 @@ void Engine_run()
 			objcount++;
 		}
 			
-		World_flush();
+		World_refresh();
 		
 		Logic_update(time);	
 			

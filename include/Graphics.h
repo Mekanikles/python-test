@@ -8,6 +8,7 @@ int Graphics_init();
 void Graphics_destroy();
 
 void Graphics_renderScene(struct GameObjectList* objectlist);
+void Graphics_refresh();
 
 #endif
 

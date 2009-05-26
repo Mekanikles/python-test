@@ -1,12 +1,13 @@
 #include "Graphics.h"
 
 #include "GL/glfw.h"
-
 #include "stdio.h"
+
+#include "Engine.h"
 
 static int GLFWCALL closeWindowCallBack(void* data)
 {
-	g_done = 1;
+	Engine_stop();
 	return GL_TRUE;
 } 
 
@@ -55,5 +56,10 @@ void Graphics_renderScene(struct GameObjectList* list)
 		}
 	}
 	glEnd();
+}
+
+void Graphics_refresh()
+{
+	glfwSwapBuffers();
 }
 

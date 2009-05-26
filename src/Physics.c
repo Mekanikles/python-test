@@ -21,25 +21,35 @@ struct CollisionList* CollisionList_new()
 	return list;
 }
 
-void CollisionList_delete(struct CollisionList* list)
+void CollisionList_destroy(struct CollisionList* list)
 {	
+	assert(list);
+
+	CollisionList_clear(list);
+	free(list);
+		
+	list = NULL;
+}
+
+
+void CollisionList_clear(struct CollisionList* list)
+{
 	struct Collision* p = list->first;
 	struct Collision* t = NULL;
+				
+	assert(list);
 
-	if (list == NULL)
-		return;
-			
 	while(p != NULL)
 	{	
 		t=p->next;
 		free(p);
 		p = t;
 	}
-
-	free(list);
-		
-	list = NULL;
+	
+	list->first = NULL;
+	list->last = NULL;
 }
+
 
 void CollisionList_addLast(struct CollisionList* list, struct Collision* obj)
 {
@@ -66,7 +76,7 @@ void Physics_update(struct GameObjectList* list)
 	struct GameObject* p1 = NULL;
 	for (p1 = list->first; p1 != NULL; p1 = p1->next)
 	{
-		p1->vy += 0.98f;
+		//p1->vy += 0.98f;
 		p1->x += p1->vx;
 		p1->y += p1->vy;
 	}

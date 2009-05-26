@@ -18,11 +18,10 @@ WorldObject* WorldObject_new();
 void WorldObject_destroy(WorldObject* obj);
 
 void World_setWorldObject(WorldObject* world);
-void World_flush();
+void World_refresh();
 
 void World_addGameObject(struct GameObject* object);
-
-
+void World_removeGameObject(struct GameObject* object);
 
 
 #endif

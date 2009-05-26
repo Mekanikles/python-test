@@ -2,29 +2,36 @@
 #include "Python.h"
 
 #include "SageModule.h"
+#include "LinkedList.h"
+#include "Timer.h"
+
 
 PyObject *pName;
 PyObject *pModule;
 PyObject *pDict;
-PyObject *pFunc;
 PyObject *pValue;
 
-int Script_init()
+PyObject *pSetup;
+PyObject *pClean;
+
+int Script_init(const char* script)
 {
 	Py_Initialize();
 	
 	initModule();
   
-    pName = PyString_FromString("test");
+    pName = PyString_FromString(script);
 	
     if (!(pModule = PyImport_Import(pName)))
+	{
+        PyErr_Print();
 		BREAK_ERROR;
-
+	}
     pDict = PyModule_GetDict(pModule);
 
-    pFunc = PyDict_GetItemString(pDict, "test");
-
-    if (!PyCallable_Check(pFunc)) 
+    pSetup = PyDict_GetItemString(pDict, "setup");
+	
+    if (!PyCallable_Check(pSetup)) 
 	{
         PyErr_Print();
 		BREAK_ERROR;
@@ -35,6 +42,11 @@ int Script_init()
 
 void Script_destroy()
 {
+    if (PyCallable_Check(pClean)) 
+	{
+		PyObject_CallObject(pClean, NULL);
+    }
+
 	if (pModule) 
 	{
 		Py_DECREF(pModule);
@@ -47,13 +59,15 @@ void Script_destroy()
     Py_Finalize();
 }
 
-void Script_callFunction(struct GameObject* obj)
+void Script_callTimedFunction(void* functionObject, Time t)
 {
+	assert(functionObject);
+	PyObject *arg;
+	arg = Py_BuildValue("(f)", t);
+	PyObject_CallObject((PyObject*)functionObject, arg);
+}
 
-	PyObject *arg, *args;
-	
-	struct Sage_GameObject* theobj = Sage_GameObject_new(obj);
-	
-	arg = Py_BuildValue("(O)", theobj);
-	PyObject_CallObject(pFunc, arg);
+void Script_callSetup()
+{
+	PyObject_CallObject(pSetup, NULL);
 }

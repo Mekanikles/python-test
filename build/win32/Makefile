@@ -1,5 +1,5 @@
 SAGE=../../../..
-HOME=$(SAGE)/POC/PhysTest
+HOME=$(SAGE)/Git/python-test
 SOURCES=
 SOURCES+=$(HOME)/src/SageModule.c
 SOURCES+=$(HOME)/src/Physics.c
@@ -8,8 +8,13 @@ SOURCES+=$(HOME)/src/Script.c
 SOURCES+=$(HOME)/src/GameObject.c
 SOURCES+=$(HOME)/src/Graphics.c
 SOURCES+=$(HOME)/src/Logic.c
+SOURCES+=$(HOME)/src/World.c
+SOURCES+=$(HOME)/src/LinkedList.c
+SOURCES+=$(HOME)/src/Timer.c
+SOURCES+=$(HOME)/src/Engine.c
 
-TARGET=$(HOME)/bin/phystest.exe
+
+TARGET=$(HOME)/bin/python-test.exe
 
 CXX     = gcc
 CXXFLAGS =  -Wall #-O3 -ffast-math
@@ -18,11 +23,12 @@ ifeq ($(DEBUGSYMBOLS), YES)
 	CXXFLAGS += -DDEBUGSYMBOLS=YES
 endif		
 
-CFLAGS = -I$(HOME)/include -I$(SAGE)/external/glfw/include -I"$(PY_HOME)/include"
+CFLAGS = -I$(HOME)/include -IC:/WINDOWS/include -I"$(PY_HOME)/include" -I"$(PY_HOME)/include/Stackless"
 
-LIBS = $(SAGE)/external/glfw/lib/win32/libglfw.a
+LIBS = C:/WINDOWS/lib/libglfw.a
 LIBS += -lopengl32
-LIBS += "$(PY_HOME)/libs/libpython26.a"
+LIBS += "$(PY_HOME)/libs/python26.lib"
+LIBS += "$(PY_HOME)/python26.dll"
 
 OBJECTS=$(SOURCES:.c=.o)
 

@@ -6,8 +6,8 @@
 int Timer_init();
 void Timer_destroy();
 
-void Timer_addCallback(void (*func)(void* data, Time t), void* data, Time interval);
-void Timer_callFunctions(Time currentTime);
+void Timer_update();
+Time Timer_getTime();
 
 
 
