@@ -104,10 +104,10 @@ void Physics_detectCollisions(struct GameObjectList* list, struct CollisionList*
 
 int gameObjectsColliding(struct GameObject* self, struct GameObject* obj)
 {
-	return !(self->x + self->w < obj->x ||
-		self->x > obj->x + obj->w ||
-		self->y + self->h < obj->y ||
-		self->y > obj->y + obj->h);
+	return !(self->x + self->w <= obj->x ||
+		self->x >= obj->x + obj->w ||
+		self->y + self->h <= obj->y ||
+		self->y >= obj->y + obj->h);
 }
 
 

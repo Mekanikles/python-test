@@ -3,44 +3,98 @@ import pysage
 import math
 import random
 
+shapedata = [[[-16, -16], ##S-shape
+              [-16, 0],
+              [0, 0],
+              [0, 16]],
+
+             [[0, -32], ##Mirrored S-shape
+              [0, -16],
+              [0, 0],
+              [0, 16]],
+             
+             [[0, -16], ##Box-shape
+              [0, 0],
+              [-16, 0],
+              [-16, 16]],
+             
+             [[-16, -16], ##I-shape
+              [0, -16],
+              [-16, 0],
+              [0, 0]],
+             
+             [[0, -32], ##L-shape
+              [0, -16],
+              [0, 0],
+              [-16, 0]],
+             
+             [[-16, -32], ##Mirrored L-shape
+              [-16, -16],
+              [-16, 0],
+              [0, 0]],
+             
+             [[-16, -16], ##T-shape
+              [0, -16],
+              [16, -16],
+              [0, 0]]]
+
+lockedblocks = []
+
+             
 class Shape:
-    def __init__(self, x, y):
+    def __init__(self, x, y, shape):
         self.x = x
         self.y = y
-        self.box = [pysage.GameObject(x, y, 16, 16),
+        self.shape = shape
+        self.blocks = [pysage.GameObject(x, y, 16, 16),
                     pysage.GameObject(x, y, 16, 16),
                     pysage.GameObject(x, y, 16, 16),
                     pysage.GameObject(x, y, 16, 16)]   
     def add(self):
-        for i in self.box:
+        for i in self.blocks:
             pysage.addObject(i)
         pysage.runThread(self.update)
+    def checkCollision(self):
+        for i in self.blocks:
+            for p in lockedblocks:
+                if (i.collidesWith(p)):
+                    return True
+        return False
+        
     def positionBlocks(self):
-        self.box[0].pos = (self.x - 16, self.y - 16)
-        self.box[1].pos = (self.x - 16, self.y)
-        self.box[2].pos = (self.x, self.y)
-        self.box[3].pos = (self.x, self.y + 16)
-
+        for i in range(0, 4):
+            self.blocks[i].pos = (self.x + shapedata[self.shape][i][0], self.y + shapedata[self.shape][i][1])
+    def lockPosition(self):
+        for i in self.blocks:
+            lockedblocks.append(i)
+        
     def update(self):
-        while(self.y < 448):
+        while(1):
             self.y += 2
             self.positionBlocks()
+            if (self.checkCollision()):
+                self.y = math.floor(self.y / 16.0) * 16
+                self.positionBlocks()
+                break
             pysage.yieldThread()
-        self.remove()
+        self.lockPosition()
     def remove(self):
-        for i in self.box:
+        for i in self.blocks:
             pysage.removeObject(i)
         del self
 
 def spawnShapes():
     while(1):
-        piece = Shape(random.randint(16, 624), 0)
+        piece = Shape(random.randint(0, 39) * 16, 0, random.randint(0, 6))
         piece.add()
-        pysage.sleepThread(1.0/2.0)
+        pysage.sleepThread(1.0)
 
 def setup():
     print "Setting up game."
     pysage.initialize()
 
+    floor = pysage.GameObject(0, 480, 640, 16)
+    pysage.addObject(floor)
+    lockedblocks.append(floor)
     pysage.runThread(spawnShapes)
     
