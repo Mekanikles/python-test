@@ -1,3 +1,4 @@
+# -*- coding: cp1252 -*-
 import sage
 
 import stackless
@@ -36,7 +37,10 @@ def _tickTasklets(currentTime):
     # Run any tasklets which need to be scheduled.  As long as the BeNice and
     # Sleep callers do not use schedule they should never be in the scheduler
     # at this point, but rather back in the yield channel or on a sleep channel.
-    stackless.run(10000000)
+    interruptedTasklet = stackless.run(1000000)
+    if interruptedTasklet:
+        print "Warning: Tasklet", interruptedTasklet, "was interrupted, make sure it does not busy loop."
+        interruptedTasklet.insert()
 
 def yieldThread():
     """ Signal that the tasklet can be interrupted. """
@@ -53,6 +57,37 @@ def sleepThread(secs):
 
 def runThread(function):
     stackless.tasklet(function)()
+
+
+class GameObject(sage.GameObject):
+    def __init__(self, x, y, w, h):
+        sage.GameObject.__init__(self, x, y, w, h)
+
+    def _getPos(self):return (sage.getObjectPosX(self), sage.getObjectPosY(self))
+    def _getVel(self): return (sage.getObjectVelX(self), sage.getObjectVelY(self))
+    def _setPos(self, pos):
+        sage.setObjectPosX(self, pos[0])
+        sage.setObjectPosY(self, pos[1])
+    def _setVel(self, vel):
+        sage.setObjectVelX(self, vel[0])
+        sage.setObjectVelY(self, vel[1])
+    def _getX(self): return sage.getObjectPosX(self)
+    def _getY(self): return sage.getObjectPosY(self) 
+    def _setX(self, x): sage.setObjectPosX(self, x)
+    def _setY(self, y): sage.setObjectPosY(self, y)
+    def _getVX(self): return sage.getObjectVelX(self)
+    def _getVY(self): return sage.getObjectVelY(self) 
+    def _setVX(self, vx): sage.setObjectVelX(self, vx)
+    def _setVY(self, vy): sage.setObjectVelY(self, vy)
+    pos = property(_getPos, _setPos)
+    vel = property(_getVel, _setVel)   
+    x = property(_getX, _setX)
+    y = property(_getY, _setY)
+    vx = property(_getVX, _setVX)
+    vy = property(_getVY, _setVY)
+    
+    def collidesWith(obj1, obj2):
+        return sage.objectsColliding(obj1, obj2)
     
 def initialize():
     def _update(currentTime):
@@ -62,24 +97,12 @@ def initialize():
          
     sage.registerUpdate(_update)
 
-
-def getPos(object):
-    return (sage.getObjectPosX(object), sage.getObjectPosY(object))
-
-def setPos(object, pos):
-    sage.setObjectPosX(object, pos[0])
-    sage.setObjectPosY(object, pos[1])
-
-def getVel(object):
-    return (sage.getObjectVelX(object), sage.getObjectVelY(object))
-
-def setVel(object, vel):
-    sage.setObjectVelX(object, vel[0])
-    sage.setObjectVelY(object, vel[1])
-
-def isColliding(obj1, obj2):
-    return sage.objectsColliding(obj1, obj2)
+def addObject(object):
+    sage.addObject(object)
     
+def removeObject(object):
+    sage.removeObject(object)
+
 
 
 # Scheduler running related functions.

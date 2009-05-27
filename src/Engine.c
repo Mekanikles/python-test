@@ -92,7 +92,7 @@ void Engine_run()
 		fps++;
 		if (glfwGetTime() - timestart >= 1.0)
 		{
-			fprintf(stderr, "Fps: %i, Objects: %i\n", fps, objcount);
+			fprintf(stderr, "Fps: %i, Objects: %u\n", fps, World_getObjectCount());
 			
 			fps = 0;
 			timestart = glfwGetTime();

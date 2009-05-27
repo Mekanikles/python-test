@@ -22,7 +22,7 @@ void World_refresh();
 
 void World_addGameObject(struct GameObject* object);
 void World_removeGameObject(struct GameObject* object);
-
+unsigned int World_getObjectCount();
 
 #endif
 

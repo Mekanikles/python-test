@@ -1,9 +1,13 @@
 #include "GameObject.h"
 
+static unsigned int objects = 0;
 
 struct GameObject* GameObject_new()
 {
 	struct GameObject* obj = (struct GameObject*)malloc(sizeof(struct GameObject));
+	obj->next = NULL;
+	obj->prev = NULL;
+	obj->list = NULL;
 
 	obj->x=0;
 	obj->y=0;
@@ -12,6 +16,8 @@ struct GameObject* GameObject_new()
 	obj->w=32;
 	obj->h=16;
 	
+	obj->id = objects++;
+		
 	return obj;
 }
 
@@ -46,6 +52,7 @@ void GameObjectList_destroy(struct GameObjectList* list)
 
 void GameObjectList_addLast(struct GameObjectList* list, struct GameObject* obj)
 {
+	fprintf(stderr, "Adding object %u to list %p\n", obj->id, list);
 	if (list->first == NULL)
 	{	
 		list->first = obj;
@@ -60,12 +67,20 @@ void GameObjectList_addLast(struct GameObjectList* list, struct GameObject* obj)
 		obj->next = NULL;
 		list->last = obj;	
 	}
+	obj->list = list;
 }
 
-void GameObjectList_remove(struct GameObjectList* list, struct GameObject* obj)
+int GameObjectList_remove(struct GameObjectList* list, struct GameObject* obj)
 {
+	fprintf(stderr, "Removing object %u from list %p\n", obj->id, list);
 	assert(list->first);
 	assert(obj);
+	if (obj->list != list)
+	{
+		fprintf(stderr, "Cannot remove object %u, object not in list.\n", obj->id);
+		return 0;
+	}
+	
 	if (obj->next != NULL)
 	{	
 		obj->next->prev = obj->prev;
@@ -82,6 +97,9 @@ void GameObjectList_remove(struct GameObjectList* list, struct GameObject* obj)
 	{
 		list->last = obj->prev;
 	}
+	obj->list = NULL;
+	
+	return 1;
 }
 
 

@@ -4,6 +4,7 @@
 #include "Physics.h"
 
 static WorldObject* currentworld = NULL;
+static unsigned int objectCount = 0;
 
 WorldObject* WorldObject_new()
 {
@@ -35,10 +36,38 @@ void World_addGameObject(GameObject* object)
 {
 	assert(object);
 	assert(currentworld);
-	GameObjectList_remove(currentworld->objectlist, object);
+	GameObjectList_addLast(currentworld->objectlist, object);
+	objectCount++;	
+	
+	fprintf(stderr, "Added %u to List: ", object->id);
+	GameObject* p;
+	for (p = currentworld->objectlist->first; p != NULL; p=p->next)
+	{
+		fprintf(stderr, "%u ", p->id);
+	}
+	fprintf(stderr, "\n");
 }
 
 void World_removeGameObject(GameObject* object)
 {
 	assert(object);
+	assert(currentworld);
+
+	if (GameObjectList_remove(currentworld->objectlist, object))
+	{
+		objectCount--;
+	
+		fprintf(stderr, "Removed %u from List: ", object->id);
+		GameObject* p;
+		for (p = currentworld->objectlist->first; p != NULL; p=p->next)
+		{
+			fprintf(stderr, "%u ", p->id);
+		}
+		fprintf(stderr, "\n");
+	}
+}
+
+unsigned int World_getObjectCount()
+{
+	return objectCount;
 }

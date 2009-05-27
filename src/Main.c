@@ -5,7 +5,7 @@
 
 int main(int argc, char *argv[])
 {
-	if (argc != 1)
+	if (argc != 2)
 	{
 		fprintf(stderr, "Please provide script file\n");
 		return 0;	
@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 		
-	if (Script_init(argv[0]) != 0)
+	if (Script_init(argv[1]) != 0)
 	{
 		fprintf(stderr, "Could not initialize script, exiting...\n");
 	}
