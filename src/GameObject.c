@@ -52,7 +52,6 @@ void GameObjectList_destroy(struct GameObjectList* list)
 
 void GameObjectList_addLast(struct GameObjectList* list, struct GameObject* obj)
 {
-	fprintf(stderr, "Adding object %u to list %p\n", obj->id, list);
 	if (list->first == NULL)
 	{	
 		list->first = obj;
@@ -72,7 +71,6 @@ void GameObjectList_addLast(struct GameObjectList* list, struct GameObject* obj)
 
 int GameObjectList_remove(struct GameObjectList* list, struct GameObject* obj)
 {
-	fprintf(stderr, "Removing object %u from list %p\n", obj->id, list);
 	assert(list->first);
 	assert(obj);
 	if (obj->list != list)

@@ -95,14 +95,17 @@ def initialize():
         _currentTime = currentTime
         _tickTasklets(currentTime)
          
-    sage.registerUpdate(_update)
+    sage.registerUpdateFunction(_update)
 
 def addObject(object):
     sage.addObject(object)
     
 def removeObject(object):
     sage.removeObject(object)
-
-
+    
+def listenForControllerInput(object):
+    filtr = sage.InputData(0,0,0)
+    sage.registerInputListener(object, filtr)
+    
 
 # Scheduler running related functions.

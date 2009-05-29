@@ -83,11 +83,9 @@ class Shape:
             pysage.removeObject(i)
         del self
 
-def spawnShapes():
-    while(1):
-        piece = Shape(random.randint(0, 39) * 16, 0, random.randint(0, 6))
-        piece.add()
-        pysage.sleepThread(1.0)
+def spawnShape(inputData):
+    piece = Shape(random.randint(0, 39) * 16, 0, random.randint(0, 6))
+    piece.add()
 
 def setup():
     print "Setting up game."
@@ -96,5 +94,5 @@ def setup():
     floor = pysage.GameObject(0, 480, 640, 16)
     pysage.addObject(floor)
     lockedblocks.append(floor)
-    pysage.runThread(spawnShapes)
+    pysage.listenForControllerInput(spawnShape)
     

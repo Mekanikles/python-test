@@ -1,7 +1,6 @@
 SAGE=../../../..
 HOME=$(SAGE)/Git/python-test
 SOURCES=
-SOURCES+=$(HOME)/src/SageModule.c
 SOURCES+=$(HOME)/src/Physics.c
 SOURCES+=$(HOME)/src/Main.c
 SOURCES+=$(HOME)/src/Script.c
@@ -12,7 +11,11 @@ SOURCES+=$(HOME)/src/World.c
 SOURCES+=$(HOME)/src/LinkedList.c
 SOURCES+=$(HOME)/src/Timer.c
 SOURCES+=$(HOME)/src/Engine.c
+SOURCES+=$(HOME)/src/Input.c
 
+SOURCES+=$(HOME)/src/SageModule.c
+SOURCES+=$(HOME)/src/SageModule_GameObject.c
+SOURCES+=$(HOME)/src/SageModule_Input.c
 
 TARGET=$(HOME)/bin/python-test.exe
 

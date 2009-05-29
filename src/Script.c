@@ -4,6 +4,9 @@
 #include "SageModule.h"
 #include "LinkedList.h"
 #include "Timer.h"
+#include "Input.h"
+
+#include "SageModule_Input.h"
 
 
 PyObject *pName;
@@ -66,6 +69,19 @@ void Script_callTimedFunction(void* functionObject, Time t)
 	arg = Py_BuildValue("(f)", t);
 	PyObject_CallObject((PyObject*)functionObject, arg);
 }
+
+void Script_callInputFunction(void* functionObject, InputData input)
+{
+	assert(functionObject);
+	Sage_InputData* inputdata = Sage_InputData_new(input.controller, 
+										input.button, 
+										input.value,
+										input.state);
+	PyObject* arg;
+	arg = Py_BuildValue("(O)", inputdata);
+	PyObject_CallObject((PyObject*)functionObject, arg);
+}
+
 
 void Script_callSetup()
 {

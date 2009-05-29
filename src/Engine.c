@@ -6,6 +6,7 @@
 #include "Logic.h"
 #include "World.h"
 #include "Timer.h"
+#include "Input.h"
 
 #include "GL/glfw.h"
 
@@ -25,7 +26,10 @@ int Engine_init()
 
 	if (Logic_init() != 0)
 		BREAK_ERROR;
-	
+		
+	if (Input_init() != 0)
+		BREAK_ERROR;
+		
 	theworld = WorldObject_new();
 	World_setWorldObject(theworld);	
 		
@@ -36,6 +40,8 @@ int Engine_init()
 
 void Engine_destroy()
 {
+	Input_destroy();
+	
 	Logic_destroy();
 	
 	Timer_destroy();
@@ -57,33 +63,25 @@ void Engine_run()
 {
 	double timestart = glfwGetTime();	
 	int fps = 0;	
-	int objcount = 0;	
-		
+
 	time = Timer_getTime();		
 	
 	while(!done)
 	{
 		Timer_update();
 		time = Timer_getTime();	
-		done = done | (int)glfwGetKey(GLFW_KEY_ESC);
-		
-		if (glfwGetMouseButton(0))
-		{
-			struct GameObject* obj = GameObject_new();
-			obj->x = 50; obj->y = 50; obj->vx = 7; obj->vy=-5;
-			World_addGameObject(obj);
-			objcount++;
-		}
+	
+		Input_handleInput(time);					
 			
 		World_refresh();
-		
+			
 		Logic_update(time);	
 			
 		Physics_update(theworld->objectlist);
 		
-		Physics_detectCollisions(theworld->objectlist, theworld->collisionlist);
+		//Physics_detectCollisions(theworld->objectlist, theworld->collisionlist);
 			
-		Logic_handleCollisions(theworld->collisionlist);	
+		//Logic_handleCollisions(theworld->collisionlist);	
 		
 		Graphics_renderScene(theworld->objectlist);
 		
@@ -97,6 +95,8 @@ void Engine_run()
 			fps = 0;
 			timestart = glfwGetTime();
 		}
+		
+		glfwSleep(0.033);
 	}
 	
 	WorldObject_destroy(theworld);

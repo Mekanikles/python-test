@@ -39,6 +39,7 @@ void World_addGameObject(GameObject* object)
 	GameObjectList_addLast(currentworld->objectlist, object);
 	objectCount++;	
 	
+	/*
 	fprintf(stderr, "Added %u to List: ", object->id);
 	GameObject* p;
 	for (p = currentworld->objectlist->first; p != NULL; p=p->next)
@@ -46,6 +47,7 @@ void World_addGameObject(GameObject* object)
 		fprintf(stderr, "%u ", p->id);
 	}
 	fprintf(stderr, "\n");
+	*/
 }
 
 void World_removeGameObject(GameObject* object)
@@ -57,6 +59,7 @@ void World_removeGameObject(GameObject* object)
 	{
 		objectCount--;
 	
+		/*
 		fprintf(stderr, "Removed %u from List: ", object->id);
 		GameObject* p;
 		for (p = currentworld->objectlist->first; p != NULL; p=p->next)
@@ -64,6 +67,8 @@ void World_removeGameObject(GameObject* object)
 			fprintf(stderr, "%u ", p->id);
 		}
 		fprintf(stderr, "\n");
+		*/
+		
 	}
 }
 
