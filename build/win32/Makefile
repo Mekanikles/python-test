@@ -26,7 +26,7 @@ ifeq ($(DEBUGSYMBOLS), YES)
 	CXXFLAGS += -DDEBUGSYMBOLS=YES
 endif		
 
-CFLAGS = -I$(HOME)/include -IC:/WINDOWS/include -I"$(PY_HOME)/include" -I"$(PY_HOME)/include/Stackless"
+CFLAGS = -I$(HOME)/include -IC:/WINDOWS/include -I"$(PY_HOME)/include"
 
 LIBS = C:/WINDOWS/lib/libglfw.a
 LIBS += -lopengl32

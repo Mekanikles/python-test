@@ -14,8 +14,7 @@ PyObject *pModule;
 PyObject *pDict;
 PyObject *pValue;
 
-PyObject *pSetup;
-PyObject *pClean;
+PyObject *pMain;
 
 int Script_init(const char* script)
 {
@@ -32,11 +31,12 @@ int Script_init(const char* script)
 	}
     pDict = PyModule_GetDict(pModule);
 
-    pSetup = PyDict_GetItemString(pDict, "setup");
+    pMain = PyDict_GetItemString(pDict, "main");
 	
-    if (!PyCallable_Check(pSetup)) 
+    if (!PyCallable_Check(pMain)) 
 	{
         PyErr_Print();
+		fprintf(stderr, "Could not find 'main' python function.\n");
 		BREAK_ERROR;
     }
 	
@@ -45,11 +45,6 @@ int Script_init(const char* script)
 
 void Script_destroy()
 {
-    if (PyCallable_Check(pClean)) 
-	{
-		PyObject_CallObject(pClean, NULL);
-    }
-
 	if (pModule) 
 	{
 		Py_DECREF(pModule);
@@ -83,7 +78,7 @@ void Script_callInputFunction(void* functionObject, InputData input)
 }
 
 
-void Script_callSetup()
+void Script_callMain()
 {
-	PyObject_CallObject(pSetup, NULL);
+	PyObject_CallObject(pMain, NULL);
 }

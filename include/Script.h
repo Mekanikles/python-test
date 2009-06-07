@@ -14,7 +14,7 @@ void Script_destroy();
 void Script_callTimedFunction(void* functionObject, Time t);
 void Script_callInputFunction(void* functionObject, InputData input);
 void Script_callListeners();
-void Script_callSetup();
+void Script_callMain();
 void Script_handleEvent(enum EventType e);
 
 void Script_addListener(void* listener);

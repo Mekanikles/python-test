@@ -10,25 +10,16 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Please provide script file\n");
 		return 0;	
 	}
-
-	if (Engine_init() != 0)
-	{
-		fprintf(stderr, "Could not initialize engine, exiting...\n");
-		return 0;
-	}
 		
 	if (Script_init(argv[1]) != 0)
 	{
 		fprintf(stderr, "Could not initialize script, exiting...\n");
+		Script_destroy();
+		return 0;
 	}
-	else
-	{
-		Script_callSetup();
-		Engine_run();
-	}
-	
+
+	Script_callMain();
 	Script_destroy();
-	Engine_destroy();
 	
 	return 0;
 }

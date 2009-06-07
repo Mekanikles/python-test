@@ -11,6 +11,7 @@
 #include "GL/glfw.h"
 
 static int done = 1;
+static int initialize = 0;
 
 WorldObject* theworld = NULL;
 Time time = 0;	
@@ -34,7 +35,8 @@ int Engine_init()
 	World_setWorldObject(theworld);	
 		
 	done = 0;
-	
+
+	initialize = 1;
 	return 0;
 }
 

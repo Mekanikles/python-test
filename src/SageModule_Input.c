@@ -2,7 +2,7 @@
 #include "GameObject.h"
 #include "Input.h"
 
-// WTF, stackless is this yooooou!?
+// Seriously, why isn't this already included?
 #include "structmember.h"
 
 

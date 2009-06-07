@@ -1,64 +1,39 @@
 # -*- coding: cp1252 -*-
+from __future__ import generators
+from collections import deque
+
 import sage
 
-import stackless
+class _Thread():
+    def __init__(self, func):
+        self.nexttick = 0;
+        self.generator = func()
 
-## Utilities for tasklets.
-_yieldChannel = stackless.channel()
-_sleepingTasklets = []
-_currentTime = 0
+class _Scheduler():
+    def __init__(self):
+        self._runningThreads = deque()
+        self._sleepingThreads = []
+        
+    def runFrame(self, currentTime):
+        for i in range(len(self._runningThreads)):
+            try:
+                thread = self._runningThreads[0]
+                if (currentTime >= thread.nexttick):
+                    sleep = thread.generator.next()
+                if (sleep > 0):
+                    thread.nexttick = currentTime + sleep
+                self._runningThreads.rotate(-1)
+            except StopIteration:
+                del self._runningThreads[0]
+            except IndexError:
+                # allow internal exception to propagate
+                if len(self._runningThreads) > 0: raise
 
-def _checkSleepingTasklets():
-    """ Awaken all tasklets which are due to be awakened. """
+    def addThread(self, thread):
+        self._runningThreads.append(thread)
 
-    while len(_sleepingTasklets):
-        endTime = _sleepingTasklets[0][0]
-        if endTime > _currentTime:
-            break
-        channel = _sleepingTasklets[0][1]
-        del _sleepingTasklets[0]
-        # We have to send something, but it doesn't matter what as it is not used.
-        channel.send(None)
-
-def _tickTasklets(currentTime):
-    """ Run one frame of tasklets. """
-    
-    # Only schedule as many tasklets as there are waiting when
-    # we start.  This is because some of the tasklets we awaken
-    # may BeNice their way back onto the channel.  Well they
-    # would
-    n = -_yieldChannel.balance
-    while n > 0:
-        _yieldChannel.send(None)
-        n -= 1
-
-    _checkSleepingTasklets()
-
-    # Run any tasklets which need to be scheduled.  As long as the BeNice and
-    # Sleep callers do not use schedule they should never be in the scheduler
-    # at this point, but rather back in the yield channel or on a sleep channel.
-    interruptedTasklet = stackless.run(1000000)
-    if interruptedTasklet:
-        print "Warning: Tasklet", interruptedTasklet, "was interrupted, make sure it does not busy loop."
-        interruptedTasklet.insert()
-
-def yieldThread():
-    """ Signal that the tasklet can be interrupted. """
-    _yieldChannel.receive()
-
-def sleepThread(secs):
-    """ Put the current tasklet to sleep for a number of seconds. """
-    channel = stackless.channel()
-    endTime = _currentTime + secs
-    _sleepingTasklets.append((endTime, channel))
-    _sleepingTasklets.sort()
-    # Block until we get sent an awakening notification.
-    channel.receive()
-
-def runThread(function):
-    stackless.tasklet(function)()
-
-
+scheduler = _Scheduler()
+        
 class GameObject(sage.GameObject):
     def __init__(self, x, y, w, h):
         sage.GameObject.__init__(self, x, y, w, h)
@@ -88,14 +63,27 @@ class GameObject(sage.GameObject):
     
     def collidesWith(obj1, obj2):
         return sage.objectsColliding(obj1, obj2)
-    
+       
 def initialize():
-    def _update(currentTime):
-        global _currentTime
-        _currentTime = currentTime
-        _tickTasklets(currentTime)
-         
-    sage.registerUpdateFunction(_update)
+    # Import Psyco if available
+    try:
+        import psyco
+        psyco.full()
+    except ImportError:
+        pass
+    sage.initialize()
+    sage.registerUpdateFunction(scheduler.runFrame)
+
+def start():
+    sage.run()
+    
+def cleanup():
+    sage.terminate()
+
+
+
+def runThread(function):
+    scheduler.addThread(_Thread(function))
 
 def addObject(object):
     sage.addObject(object)

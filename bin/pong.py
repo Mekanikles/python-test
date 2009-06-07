@@ -32,7 +32,7 @@ class Ball(pysage.GameObject):
                 
             if (self.x > 640 - 16):
                 self.reset(5, random.randint(-3, 3))
-            pysage.yieldThread()
+            yield
                        
     def reset(self, vx, vy):
         self.pos = (320 - 8, 240 - 8)
@@ -78,7 +78,7 @@ class Paddle(pysage.GameObject):
                     else:
                         self.ball.x = self.x + 16
                         self.ball.vel = (-self.ball.vx * 1.05, self.ball.vy + (self.vy / 1.5))
-            pysage.yieldThread()
+            yield
                         
     def think(self):
         while(1):
@@ -91,15 +91,13 @@ class Paddle(pysage.GameObject):
             if (nextypos > 480):
                 nextypos = 960 - nextypos
             self.vy = maxabs(self.vy + (nextypos - self.y - 32) / 10.0, 4)
-            pysage.sleepThread(1.0/15.0);
+            yield (1.0/4.0)
 
 ball = Ball(320 - 8, 240 - 8)
 paddle1 = Paddle(40, 216, ball, "left")
 paddle2 = Paddle(600 - 16, 216, ball, "right")
 
-def setup():
-    print "Setting up game."
-
+def main():
     pysage.initialize()
 
     ball.add()
@@ -107,4 +105,9 @@ def setup():
     paddle2.add()
 
     ball.reset(4, random.randint(-3, 3))
+
+    
+    pysage.start()
+    pysage.cleanup()
+    
     return

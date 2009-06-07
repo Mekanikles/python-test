@@ -1,5 +1,7 @@
 #include "Python.h"
 
+#include "Input.h"
+
 typedef struct Sage_InputData
 {
     PyObject_HEAD

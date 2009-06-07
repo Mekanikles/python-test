@@ -76,7 +76,7 @@ class Shape:
                 self.y = math.floor(self.y / 16.0) * 16
                 self.positionBlocks()
                 break
-            pysage.yieldThread()
+            yield
         self.lockPosition()
     def remove(self):
         for i in self.blocks:
@@ -87,12 +87,14 @@ def spawnShape(inputData):
     piece = Shape(random.randint(0, 39) * 16, 0, random.randint(0, 6))
     piece.add()
 
-def setup():
-    print "Setting up game."
+def main():
     pysage.initialize()
 
     floor = pysage.GameObject(0, 480, 640, 16)
     pysage.addObject(floor)
     lockedblocks.append(floor)
     pysage.listenForControllerInput(spawnShape)
+
+    pysage.start()
+    pysage.cleanup()
     

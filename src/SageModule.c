@@ -1,6 +1,7 @@
 #include "SageModule.h"
 #include "Globals.h"
 
+#include "Engine.h"
 #include "GameObject.h"
 #include "World.h"
 #include "Script.h"
@@ -16,6 +17,10 @@
 
 /**** Exported Function Declarations ****/
 
+/*
+static PyObject* Sage_initialize(PyObject*, PyObject*);
+static PyObject* Sage_run(PyObject*, PyObject*);
+
 static PyObject* Sage_addObject(PyObject*, PyObject*);
 static PyObject* Sage_removeObject(PyObject*, PyObject*);
 static PyObject* Sage_registerUpdateFunction(PyObject*, PyObject*);
@@ -30,49 +35,37 @@ static PyObject* Sage_getObjectPosY(PyObject*, PyObject*);
 static PyObject* Sage_setObjectVelX(PyObject*, PyObject*);
 static PyObject* Sage_setObjectVelY(PyObject*, PyObject*);
 static PyObject* Sage_getObjectVelX(PyObject*, PyObject*);
-static PyObject* Sage_getObjectVelY(PyObject*, PyObject*);
+static PyObject* Sage_getObjectVelY(PyObject*, PyObject*);*/
+
+/**** Exported Function Bodies ****/
 
 
-static PyMethodDef exportSageMethods[] = 
+static PyObject* Sage_initialize(PyObject* self, PyObject* args)
 {
-	{"registerUpdateFunction",  Sage_registerUpdateFunction, METH_VARARGS, "Register a function that runs once every frame"},
-	{"registerInputListener", Sage_registerInputListener, METH_VARARGS, "Register an input listener function"},
-	
-	{"addObject",  Sage_addObject, METH_VARARGS, "Add a game object to the world."},
-	{"removeObject",  Sage_removeObject, METH_VARARGS, "Remove a game object from the world."},
-	{"objectsColliding",  Sage_objectsColliding, METH_VARARGS, "Detects whether two objects collides or not."},
-	{"setObjectPosX",  Sage_setObjectPosX, METH_VARARGS, "Set the x position of a Game Object."},
-	{"setObjectPosY",  Sage_setObjectPosY, METH_VARARGS, "Set the y position of a Game Object."},
-	{"getObjectPosX",  Sage_getObjectPosX, METH_VARARGS, "get the x position of a Game Object."},
-	{"getObjectPosY",  Sage_getObjectPosY, METH_VARARGS, "get the y position of a Game Object."},
-	{"setObjectVelX",  Sage_setObjectVelX, METH_VARARGS, "Set the x velocity of a Game Object."},
-	{"setObjectVelY",  Sage_setObjectVelY, METH_VARARGS, "Set the y velocity of a Game Object."},
-	{"getObjectVelX",  Sage_getObjectVelX, METH_VARARGS, "get the x velocity of a Game Object."},
-	{"getObjectVelY",  Sage_getObjectVelY, METH_VARARGS, "get the y velocity of a Game Object."},
-	{NULL, NULL, 0, NULL}
-};
-
-int initModule()
-{
-    PyObject* m;
-
-    if (PyType_Ready(&Sage_GameObject_type) < 0)
-        BREAK_ERROR;
-    if (PyType_Ready(&Sage_InputData_type) < 0)
-        BREAK_ERROR;
-		
-    m = Py_InitModule("sage", exportSageMethods);
-
-    Py_INCREF(&Sage_GameObject_type);
-    PyModule_AddObject(m, "GameObject", (PyObject*)&Sage_GameObject_type);
-    Py_INCREF(&Sage_InputData_type);
-    PyModule_AddObject(m, "InputData", (PyObject*)&Sage_InputData_type);
-	
-	return 0;
+	if (Engine_init() != 0)
+	{
+		fprintf(stderr, "Could not initialize engine, exiting...\n");
+		return NULL;
+	}
+    return Py_BuildValue("");
 }
 
 
-/**** Exported Function Bodies ****/
+static PyObject* Sage_run(PyObject* self, PyObject* args)
+{
+	Engine_run();
+
+    return Py_BuildValue("");
+}
+
+
+static PyObject* Sage_terminate(PyObject* self, PyObject* args)
+{
+	Engine_destroy();
+		
+    return Py_BuildValue("");
+}
+
 
 static PyObject* Sage_registerUpdateFunction(PyObject* self, PyObject* args)
 {
@@ -227,6 +220,56 @@ static PyObject* Sage_getObjectVelY(PyObject* self, PyObject* args)
 	PyArg_ParseTuple(args, "O", &obj);
 	
     return Py_BuildValue("f", obj->gameobject->vy);
+}
+
+
+/**** Interface declaration ****/
+
+static PyMethodDef exportSageMethods[] = 
+{
+	{"initialize",  Sage_initialize, METH_VARARGS, "Add a game object to the world."},
+	{"run",  Sage_run, METH_VARARGS, "Add a game object to the world."},
+	{"terminate",  Sage_terminate, METH_VARARGS, "Add a game object to the world."},
+
+	{"registerUpdateFunction",  Sage_registerUpdateFunction, METH_VARARGS, "Register a function that runs once every frame"},
+	{"registerInputListener", Sage_registerInputListener, METH_VARARGS, "Register an input listener function"},
+	
+	{"addObject",  Sage_addObject, METH_VARARGS, "Add a game object to the world."},
+	{"removeObject",  Sage_removeObject, METH_VARARGS, "Remove a game object from the world."},
+	{"objectsColliding",  Sage_objectsColliding, METH_VARARGS, "Detects whether two objects collides or not."},
+	{"setObjectPosX",  Sage_setObjectPosX, METH_VARARGS, "Set the x position of a Game Object."},
+	{"setObjectPosY",  Sage_setObjectPosY, METH_VARARGS, "Set the y position of a Game Object."},
+	{"getObjectPosX",  Sage_getObjectPosX, METH_VARARGS, "get the x position of a Game Object."},
+	{"getObjectPosY",  Sage_getObjectPosY, METH_VARARGS, "get the y position of a Game Object."},
+	{"setObjectVelX",  Sage_setObjectVelX, METH_VARARGS, "Set the x velocity of a Game Object."},
+	{"setObjectVelY",  Sage_setObjectVelY, METH_VARARGS, "Set the y velocity of a Game Object."},
+	{"getObjectVelX",  Sage_getObjectVelX, METH_VARARGS, "get the x velocity of a Game Object."},
+	{"getObjectVelY",  Sage_getObjectVelY, METH_VARARGS, "get the y velocity of a Game Object."},
+	{NULL, NULL, 0, NULL}
+};
+
+PyMODINIT_FUNC initsage()
+{
+    PyObject* m;
+
+    if (PyType_Ready(&Sage_GameObject_type) < 0)
+        return;
+    if (PyType_Ready(&Sage_InputData_type) < 0)
+        return;
+		
+    m = Py_InitModule("sage", exportSageMethods);
+
+    Py_INCREF(&Sage_GameObject_type);
+    PyModule_AddObject(m, "GameObject", (PyObject*)&Sage_GameObject_type);
+    Py_INCREF(&Sage_InputData_type);
+    PyModule_AddObject(m, "InputData", (PyObject*)&Sage_InputData_type);
+
+}
+
+int initModule()
+{
+	initsage();
+	return 0;
 }
 
 
