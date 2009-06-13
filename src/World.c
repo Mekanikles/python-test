@@ -1,74 +1,75 @@
 #include "World.h"
 
 #include "GameObject.h"
+#include "ObjectType.h"
 #include "Physics.h"
 
-static WorldObject* currentworld = NULL;
+#include "ArrayList.h"
+
+static WorldObject* currentWorld = NULL;
 static unsigned int objectCount = 0;
+static unsigned int typeCount = 0;
 
 WorldObject* WorldObject_new()
 {
 	WorldObject* obj = (WorldObject*)malloc(sizeof(WorldObject));
 
-	obj->objectlist = GameObjectList_new();
-	obj->collisionlist = CollisionList_new();
+	obj->objectTypeArray = ArrayList_new(16);
+
+	obj->collisionlist = CollisionDataList_new();
 	return obj;
 }
 
-void WorldObject_destroy(WorldObject* obj)
+void WorldObject_destroy(void* obj)
 {
-	GameObjectList_destroy(obj->objectlist);
-	CollisionList_destroy(obj->collisionlist);
-	free(obj);
+	WorldObject* self = (WorldObject*)obj;
+	ArrayList_destroy(self->objectTypeArray, &ObjectType_destroy);
+	CollisionDataList_destroy(self->collisionlist);
+	free(self);
 }	
 
 void World_setWorldObject(WorldObject* world)
 {
-	currentworld = world;
+	currentWorld = world;
 }
 void World_refresh()
 {
-	assert(currentworld);
-	CollisionList_clear(currentworld->collisionlist);
+	CollisionDataList_clear(currentWorld->collisionlist);
 }
 
-void World_addGameObject(GameObject* object)
+void World_addGameObject(struct GameObject* object, unsigned int type)
 {
-	assert(object);
-	assert(currentworld);
-	GameObjectList_addLast(currentworld->objectlist, object);
-	objectCount++;	
-	
-	/*
-	fprintf(stderr, "Added %u to List: ", object->id);
-	GameObject* p;
-	for (p = currentworld->objectlist->first; p != NULL; p=p->next)
+	if (object->type != OBJECTTYPE_UNDEFINED)
 	{
-		fprintf(stderr, "%u ", p->id);
+		fprintf(stderr, "Warning: don't try to add an object more than once, remove it first.\n");
+		return;
 	}
-	fprintf(stderr, "\n");
-	*/
+	ObjectType* ot = World_getObjectType(type);
+	if (ot == NULL)
+	{
+		ot = ObjectType_new();
+		ot->id = type;
+		ArrayList_set(currentWorld->objectTypeArray, type, ot);
+		if (type >= typeCount)
+			typeCount = type + 1;
+	}
+	object->type = type;
+	GameObjectList_addLast(ot->objectlist, object);
+	objectCount++;	
 }
 
 void World_removeGameObject(GameObject* object)
 {
-	assert(object);
-	assert(currentworld);
-
-	if (GameObjectList_remove(currentworld->objectlist, object))
+	if (object->type == OBJECTTYPE_UNDEFINED)
 	{
-		objectCount--;
-	
-		/*
-		fprintf(stderr, "Removed %u from List: ", object->id);
-		GameObject* p;
-		for (p = currentworld->objectlist->first; p != NULL; p=p->next)
-		{
-			fprintf(stderr, "%u ", p->id);
-		}
-		fprintf(stderr, "\n");
-		*/
-		
+		fprintf(stderr, "Warning: you're trying to remove an object not in world, stop that.\n");
+		return;
+	}
+	ObjectType* type = World_getObjectType(object->type);
+	if (GameObjectList_remove(type->objectlist, object))
+	{
+		objectCount--;		
+		object->type = OBJECTTYPE_UNDEFINED;
 	}
 }
 
@@ -76,3 +77,13 @@ unsigned int World_getObjectCount()
 {
 	return objectCount;
 }
+unsigned int World_getTypeCount()
+{
+	return typeCount;
+}
+
+ObjectType* World_getObjectType(int type)
+{
+	return ArrayList_get(currentWorld->objectTypeArray, type);
+}
+

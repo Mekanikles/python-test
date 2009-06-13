@@ -3,6 +3,10 @@ import pysage
 import math
 import random
 
+TYPE_PADDLE = 0
+TYPE_BALL = 0
+
+
 def maxabs(value, maxvalue):
     if (abs(value) > maxvalue):
         return math.copysign(maxvalue, value);
@@ -14,7 +18,7 @@ class Ball(pysage.GameObject):
         pysage.GameObject.__init__(self, x, y, 16, 16)
 
     def add(self):
-        pysage.addObject(self);
+        pysage.addObject(self, TYPE_BALL);
         pysage.runThread(self.update)
 
     def update(self):
@@ -45,7 +49,7 @@ class Paddle(pysage.GameObject):
         self.side = side
 
     def add(self):
-        pysage.addObject(self);
+        pysage.addObject(self, TYPE_PADDLE);
         pysage.runThread(self.think) 
         pysage.runThread(self.update)
 
@@ -104,6 +108,8 @@ def main():
     paddle1.add()
     paddle2.add()
 
+    pysage.enableCollision(TYPE_BALL, TYPE_PADDLE)
+    
     ball.reset(4, random.randint(-3, 3))
 
     

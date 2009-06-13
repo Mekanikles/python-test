@@ -3,23 +3,30 @@
 
 #include "Globals.h"
 
+struct CollisionCallback;
 struct GameObjectList;
+struct ObjectType;
+struct LinkedList;
 
 typedef struct GameObject
 {
 	struct GameObject* next;
 	struct GameObject* prev;
 	struct GameObjectList* list;
-
+	
+	void* scriptobject;
+	struct LinkedList* collisionListeners;
+	
 	float x,y;
 	float w,h;
 	float vx, vy;
 	unsigned int id;
+	int type;
 
 } GameObject;
 
 struct GameObject* GameObject_new();
-
+void GameObject_destroy(void* obj);
 
 typedef struct GameObjectList
 {

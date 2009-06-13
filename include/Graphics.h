@@ -2,12 +2,13 @@
 #define GRAPHICS_H_
 
 #include "Globals.h"
-#include "GameObject.h"
+
+struct WorldObject;
 
 int Graphics_init();
 void Graphics_destroy();
 
-void Graphics_renderScene(struct GameObjectList* objectlist);
+void Graphics_renderScene(struct WorldObject* world);
 void Graphics_refresh();
 
 #endif

@@ -7,6 +7,7 @@
 #include "World.h"
 #include "Timer.h"
 #include "Input.h"
+#include "Script.h"
 
 #include "GL/glfw.h"
 
@@ -28,6 +29,9 @@ int Engine_init()
 	if (Logic_init() != 0)
 		BREAK_ERROR;
 		
+	if (Physics_init() != 0)
+		BREAK_ERROR;
+		
 	if (Input_init() != 0)
 		BREAK_ERROR;
 		
@@ -45,6 +49,8 @@ void Engine_destroy()
 	Input_destroy();
 	
 	Logic_destroy();
+	
+	Physics_destroy();
 	
 	Timer_destroy();
 	
@@ -79,21 +85,23 @@ void Engine_run()
 			
 		Logic_update(time);	
 			
-		Physics_update(theworld->objectlist);
+		Physics_update(theworld);
 		
-		//Physics_detectCollisions(theworld->objectlist, theworld->collisionlist);
+		Physics_detectCollisions(theworld);
 			
-		//Logic_handleCollisions(theworld->collisionlist);	
+		Logic_handleCollisions(theworld);	
 		
-		Graphics_renderScene(theworld->objectlist);
+		Graphics_renderScene(theworld);
 		
 		Graphics_refresh();
 		
 		fps++;
 		if (glfwGetTime() - timestart >= 1.0)
 		{
-			fprintf(stderr, "Fps: %i, Objects: %u\n", fps, World_getObjectCount());
+			fprintf(stderr, "Fps: %i, Objects: %u, Collision checks: %i, Script calls: %i\n", fps, World_getObjectCount(), Physics_getCheckCounter(), Script_getCallCounter());
 			
+			Physics_resetCheckCounter();
+			Script_resetCallCounter();
 			fps = 0;
 			timestart = glfwGetTime();
 		}

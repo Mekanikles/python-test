@@ -1,5 +1,8 @@
 #include "GameObject.h"
 
+#include "LinkedList.h"
+#include "ObjectType.h"
+
 static unsigned int objects = 0;
 
 struct GameObject* GameObject_new()
@@ -8,7 +11,9 @@ struct GameObject* GameObject_new()
 	obj->next = NULL;
 	obj->prev = NULL;
 	obj->list = NULL;
-
+	obj->scriptobject = NULL;
+	obj->collisionListeners = NULL;
+	
 	obj->x=0;
 	obj->y=0;
 	obj->vx=0;
@@ -17,8 +22,19 @@ struct GameObject* GameObject_new()
 	obj->h=16;
 	
 	obj->id = objects++;
+	obj->type = OBJECTTYPE_UNDEFINED;	
 		
 	return obj;
+}
+
+void GameObject_destroy(void* obj)
+{
+	GameObject* self = (GameObject*)obj;
+	if (self->collisionListeners != NULL)
+	{
+		LinkedList_destroy(self->collisionListeners);
+	}
+	free(self);
 }
 
 
@@ -41,7 +57,7 @@ void GameObjectList_destroy(struct GameObjectList* list)
 	while(p != NULL)
 	{	
 		t=p->next;
-		free(p);
+		GameObject_destroy(p);
 		p = t;
 	}
 

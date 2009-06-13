@@ -3,6 +3,7 @@
 
 #include "Engine.h"
 #include "GameObject.h"
+#include "ObjectType.h"
 #include "World.h"
 #include "Script.h"
 #include "Timer.h"
@@ -14,31 +15,9 @@
 /**** Exported Datatypes ****/
 #include "SageModule_GameObject.h"
 #include "SageModule_Input.h"
+#include "SageModule_Collision.h"
 
 /**** Exported Function Declarations ****/
-
-/*
-static PyObject* Sage_initialize(PyObject*, PyObject*);
-static PyObject* Sage_run(PyObject*, PyObject*);
-
-static PyObject* Sage_addObject(PyObject*, PyObject*);
-static PyObject* Sage_removeObject(PyObject*, PyObject*);
-static PyObject* Sage_registerUpdateFunction(PyObject*, PyObject*);
-static PyObject* Sage_objectsColliding(PyObject*, PyObject*);
-
-static PyObject* Sage_registerInputListener(PyObject*, PyObject*);
-
-static PyObject* Sage_setObjectPosX(PyObject*, PyObject*);
-static PyObject* Sage_setObjectPosY(PyObject*, PyObject*);
-static PyObject* Sage_getObjectPosX(PyObject*, PyObject*);
-static PyObject* Sage_getObjectPosY(PyObject*, PyObject*);
-static PyObject* Sage_setObjectVelX(PyObject*, PyObject*);
-static PyObject* Sage_setObjectVelY(PyObject*, PyObject*);
-static PyObject* Sage_getObjectVelX(PyObject*, PyObject*);
-static PyObject* Sage_getObjectVelY(PyObject*, PyObject*);*/
-
-/**** Exported Function Bodies ****/
-
 
 static PyObject* Sage_initialize(PyObject* self, PyObject* args)
 {
@@ -81,7 +60,7 @@ static PyObject* Sage_registerUpdateFunction(PyObject* self, PyObject* args)
         }
         Py_XINCREF(func);
 
-		Logic_addUpdateCallback(&Script_callTimedFunction, func);
+		Logic_addUpdateCallback(UpdateCallback_new(&Script_callTimedFunction, func));
 		
         result = Py_BuildValue("");
     }
@@ -93,7 +72,7 @@ static PyObject* Sage_registerInputListener(PyObject* self, PyObject* args)
 {
     PyObject* result = NULL;
     PyObject* func;
-	InputData* inputdata; 
+	Sage_InputData* inputdata; 
 
     if (PyArg_ParseTuple(args, "OO", &func, &inputdata)) 
 	{
@@ -110,7 +89,7 @@ static PyObject* Sage_registerInputListener(PyObject* self, PyObject* args)
 		data.state = inputdata->state;
 		data.value = inputdata->value;
 			
-		Input_addInputCallback(&Script_callInputFunction, func, data);
+		Input_addInputCallback(InputCallBack_new(&Script_callInputFunction, func), data);
 		
         result = Py_BuildValue("");
     }
@@ -118,12 +97,60 @@ static PyObject* Sage_registerInputListener(PyObject* self, PyObject* args)
     return result;
 }
 
+static PyObject* Sage_registerCollisionListener(PyObject* self, PyObject* args)
+{
+    PyObject* result = NULL;
+    PyObject* func;
+	Sage_CollisionData* colldata; 
+
+    if (PyArg_ParseTuple(args, "OO", &func, &colldata)) 
+	{
+        if (!PyCallable_Check(func)) 
+		{
+            PyErr_SetString(PyExc_TypeError, "parameter 1 must be callable");
+            return NULL;
+        }
+        Py_XINCREF(func);
+		
+		if (colldata->obj1 != NULL)
+		{
+			Physics_addCollisionCallbackOnGameObject(CollisionCallback_new(&Script_callCollisionFunction, func), colldata->obj1->gameobject);
+		}
+		else if (colldata->type1 != OBJECTTYPE_UNDEFINED && colldata->type2 == OBJECTTYPE_UNDEFINED)
+		{
+			ObjectType* objtype = World_getObjectType(colldata->type1);
+			if (objtype != NULL)
+				Physics_addCollisionCallbackOnObjectType(CollisionCallback_new(&Script_callCollisionFunction, func), World_getObjectType(colldata->type1));
+		}
+			
+        result = Py_BuildValue("");
+    }
+	
+    return result;
+}
+
+
+static PyObject* Sage_addCollisionCheck(PyObject *self, PyObject *args)
+{	
+	int t1, t2;
+	if (!PyArg_ParseTuple(args, "ii", &t1,&t2))
+		return NULL;
+		
+	Physics_addCollisionCheck(t1, t2);
+	
+    return Py_BuildValue("");
+}
+
+
+
 static PyObject* Sage_addObject(PyObject *self, PyObject *args)
 {	
 	Sage_GameObject* obj;
-	PyArg_ParseTuple(args, "O", &obj);
+	int type;
 	
-	World_addGameObject(obj->gameobject);
+	PyArg_ParseTuple(args, "Oi", &obj, &type);
+	
+	World_addGameObject(obj->gameobject, type);
 	Py_INCREF(obj);
 	
     return Py_BuildValue("");
@@ -227,12 +254,14 @@ static PyObject* Sage_getObjectVelY(PyObject* self, PyObject* args)
 
 static PyMethodDef exportSageMethods[] = 
 {
-	{"initialize",  Sage_initialize, METH_VARARGS, "Add a game object to the world."},
-	{"run",  Sage_run, METH_VARARGS, "Add a game object to the world."},
-	{"terminate",  Sage_terminate, METH_VARARGS, "Add a game object to the world."},
+	{"initialize",  Sage_initialize, METH_VARARGS, "Initialize the engine."},
+	{"run",  Sage_run, METH_VARARGS, "Run the engine, will return when engine is killed."},
+	{"terminate",  Sage_terminate, METH_VARARGS, "Cleans up resources."},
 
-	{"registerUpdateFunction",  Sage_registerUpdateFunction, METH_VARARGS, "Register a function that runs once every frame"},
-	{"registerInputListener", Sage_registerInputListener, METH_VARARGS, "Register an input listener function"},
+	{"registerUpdateListener",  Sage_registerUpdateFunction, METH_VARARGS, "Register a function that runs once every frame"},
+	{"registerInputListener", Sage_registerInputListener, METH_VARARGS, "Register an input listener"},	
+	{"registerCollisionListener", Sage_registerCollisionListener, METH_VARARGS, "Register an collision listener"},
+	{"enableCollisionCheck", Sage_addCollisionCheck, METH_VARARGS, "Enables collision checking between given object types"},
 	
 	{"addObject",  Sage_addObject, METH_VARARGS, "Add a game object to the world."},
 	{"removeObject",  Sage_removeObject, METH_VARARGS, "Remove a game object from the world."},
@@ -252,17 +281,22 @@ PyMODINIT_FUNC initsage()
 {
     PyObject* m;
 
+	// Do not fucking forget these, Python won't motherfucking tell you what is wrong if you do.
     if (PyType_Ready(&Sage_GameObject_type) < 0)
         return;
     if (PyType_Ready(&Sage_InputData_type) < 0)
         return;
-		
+    if (PyType_Ready(&Sage_CollisionData_type) < 0)
+        return;
+
     m = Py_InitModule("sage", exportSageMethods);
 
     Py_INCREF(&Sage_GameObject_type);
     PyModule_AddObject(m, "GameObject", (PyObject*)&Sage_GameObject_type);
     Py_INCREF(&Sage_InputData_type);
     PyModule_AddObject(m, "InputData", (PyObject*)&Sage_InputData_type);
+    Py_INCREF(&Sage_CollisionData_type);
+    PyModule_AddObject(m, "CollisionData", (PyObject*)&Sage_CollisionData_type);
 
 }
 

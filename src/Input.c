@@ -5,15 +5,30 @@
 #include "LinkedList.h"
 
 
-typedef struct _InputCallback
-{
-	void (*func)(void* data, InputData input);
-	void* data;
-} _InputCallback;
-
-
 static LinkedList* input_callbackList;
 
+InputData* InputData_new(int controller, int button, float value, int state)
+{
+	InputData* self = (InputData*)malloc(sizeof(InputData));
+	
+	self->controller = controller;
+	self->button = button;
+	self->value = value;
+	self->state = state;
+	
+	return self;
+}
+
+
+InputCallback* InputCallBack_new(void (*func)(void* data, InputData* input), void* data)
+{
+	InputCallback* self = (InputCallback*)malloc(sizeof(InputCallback));
+	
+	assert(func);
+	self->func = func;
+	self->data = data;	
+	return self;
+}
 
 int Input_init()
 {
@@ -27,26 +42,20 @@ void Input_destroy()
 }
 
 
-void Input_addInputCallback(void (*func)(void* data, InputData input), void* data, InputData filter)
+void Input_addInputCallback(InputCallback* callback, InputData filter)
 {
-	_InputCallback* callback = (_InputCallback*)malloc(sizeof(_InputCallback));
-	
-	assert(func);
-	callback->func = func;
-	callback->data = data;
-
 	LinkedList_addLast(input_callbackList, callback);
 }
 
 
 
-static void sendInput(InputData data)
+static void sendInput(InputData* data)
 {	
-	_InputCallback* callback;
-	Node* p = input_callbackList->first; 
-	for (;p != NULL; p = p->next)
+	InputCallback* callback;
+	Node* p; 
+	for (p = input_callbackList->first; p != NULL; p = p->next)
 	{
-		callback = (_InputCallback*)p->item;
+		callback = (InputCallback*)p->item;
 		callback->func(callback->data, data);
 	}	
 }
@@ -60,12 +69,7 @@ void Input_handleInput(Time t)
 	
 	if (glfwGetMouseButton(0))
 	{
-		fprintf(stderr, " ^.^ "); 
-		InputData data;
-		data.controller = 0;
-		data.button = 0;
-		data.value = INPUT_VALUE_PRESSED;
-		data.state = INPUT_STATE_TRIGGERED;	
+		InputData* data = InputData_new(0,0,INPUT_VALUE_PRESSED, INPUT_STATE_TRIGGERED);
 		sendInput(data);	
 	}
 }

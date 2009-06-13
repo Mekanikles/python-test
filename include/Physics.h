@@ -2,35 +2,60 @@
 #define PHYSICS_H_
 
 #include "Globals.h" 
-#include "GameObject.h"
+struct GameObject;
+struct ObjectType;
+struct GameObjectList;
+struct WorldObject;
 
-typedef struct Collision
+typedef struct CollisionData
 {
-	struct Collision* next;
-	struct Collision* prev;
+	struct CollisionData* next;
+	struct CollisionData* prev;
 
 	struct GameObject* obj1;
 	struct GameObject* obj2;
-} Collision;
+	
+} CollisionData;
 
-struct Collision* Collision_new();
+CollisionData* CollisionData_new();
 
 
-typedef struct CollisionList
+typedef struct CollisionCallback
 {
-	struct Collision* first;
-	struct Collision* last;
-} CollisionList;
-
-struct CollisionList* CollisionList_new();
-void CollisionList_destroy(struct CollisionList* list);
-void CollisionList_clear(struct CollisionList* list);
-void CollisionList_addLast(struct CollisionList* list, struct Collision* obj);
+	void (*func)(void* data, CollisionData* coll);
+	void* data;
+} CollisionCallback;
 
 
+CollisionCallback* CollisionCallback_new(void (*func)(void* data, CollisionData* coll), void* data);
 
-void Physics_update(struct GameObjectList* list);
-void Physics_detectCollisions(struct GameObjectList* list, struct CollisionList* collisions);
+
+typedef struct CollisionDataList
+{
+	CollisionData* first;
+	CollisionData* last;
+} CollisionDataList;
+
+CollisionDataList* CollisionDataList_new();
+void CollisionDataList_destroy(CollisionDataList* list);
+void CollisionDataList_clear(CollisionDataList* list);
+void CollisionDataList_addLast(CollisionDataList* list, CollisionData* obj);
+
+
+int Physics_init();
+void Physics_destroy();
+
+void Physics_update(struct WorldObject* world);
+void Physics_detectCollisions(struct WorldObject* world);
 int gameObjectsColliding(struct GameObject* self, struct GameObject* obj);
+
+void Physics_addCollisionCallbackOnGameObject(struct CollisionCallback* callback, struct GameObject* object);
+void Physics_addCollisionCallbackOnObjectType(struct CollisionCallback* callback, struct ObjectType* type);
+void Physics_addCollisionCheck(int type1, int type2);
+
+int Physics_getCheckCounter();
+void Physics_resetCheckCounter();
+
+
 
 #endif

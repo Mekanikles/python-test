@@ -2,7 +2,7 @@
 #include "GameObject.h"
 #include "Input.h"
 
-// Seriously, why isn't this already included?
+// Seriously, why isn't this already included in python.h?
 #include "structmember.h"
 
 
@@ -76,8 +76,8 @@ PyTypeObject Sage_InputData_type = {
     0,                         /*tp_getattro*/
     0,                         /*tp_setattro*/
     0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
-    "Input data",      /*tp_doc*/
+    Py_TPFLAGS_DEFAULT, /*tp_flags*/
+    "Input data/filter",      /*tp_doc*/
     0,		               	/* tp_traverse */
     0,		               	/* tp_clear */
     0,		               	/* tp_richcompare */

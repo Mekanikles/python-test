@@ -21,11 +21,25 @@ typedef struct InputData
 	int state;
 } InputData;
 
+InputData* InputData_new(int controller, int button, float value, int state);
+
+
+
+typedef struct InputCallback
+{
+	void (*func)(void* data, InputData* input);
+	void* data;
+} InputCallback;
+
+
+InputCallback* InputCallBack_new(void (*func)(void* data, InputData* input), void* data);
+
+
 
 int Input_init();
 void Input_destroy();
 void Input_handleInput(Time t);
-void Input_addInputCallback(void (*func)(void* data, InputData input), void* data, InputData filter);
+void Input_addInputCallback(InputCallback* callback, InputData filter);
 
 
 

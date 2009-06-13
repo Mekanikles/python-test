@@ -1,11 +1,14 @@
 #include "SageModule_GameObject.h"
 #include "GameObject.h"
 
+#include "World.h"
+#include "ObjectType.h"
+
 void Sage_GameObject_tp_dealloc(Sage_GameObject* self)
 {
 	if (self->gameobject != NULL)
 	{
-		free(self->gameobject);
+		GameObject_destroy(self->gameobject);
 	}
 
     self->ob_type->tp_free((PyObject*)self);
@@ -33,8 +36,9 @@ int Sage_GameObject_tp_init(Sage_GameObject* self, PyObject* args, PyObject* kwd
                                       &width, &height))
         return -1; 
 
-
+	
 	self->gameobject = GameObject_new();
+	self->gameobject->type = OBJECTTYPE_UNDEFINED;
 	self->gameobject->x = xpos;
 	self->gameobject->y = ypos;
 	self->gameobject->w = width;

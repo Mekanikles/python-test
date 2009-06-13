@@ -3,13 +3,18 @@
 #include "Physics.h"
 #include "Script.h"
 #include "LinkedList.h"
+#include "ObjectType.h"
+#include "World.h"
 
-typedef struct _UpdateCallback
+UpdateCallback* UpdateCallback_new(void (*func)(void* data, Time t), void* data)
 {
-	void (*func)(void* data, Time t);
-	void* data;
-} _UpdateCallback;
-
+	UpdateCallback* self = (UpdateCallback*)malloc(sizeof(UpdateCallback));
+	
+	assert(func);
+	self->func = func;
+	self->data = data;	
+	return self;
+}
 
 static LinkedList* update_callbackList;
 
@@ -24,34 +29,51 @@ void Logic_destroy()
 	LinkedList_destroy(update_callbackList);
 }
 
-void Logic_handleCollisions(struct CollisionList* collisions)
+void Logic_handleCollisions(struct WorldObject* world)
 {
-	struct Collision* p = NULL;
-	for (p = collisions->first; p != NULL; p = p->next)
+	struct CollisionData* p = NULL;
+	for (p = world->collisionlist->first; p != NULL; p = p->next)
 	{
-		//fprintf(stderr, "collide\n");
-		//Script_callFunction(p->obj1);	
+		Node* n;
+		CollisionCallback* cb;
+		ObjectType* ot;
+		
+		// Call all listeners for the objects type
+		ot = World_getObjectType(p->obj1->type);
+		if (ot->collisionListeners)
+		{
+			for (n = ot->collisionListeners->first; n != NULL; n = n->next)
+			{
+				cb = (CollisionCallback*)n->item;
+				cb->func(cb->data, p);
+			}	
+		}
+		
+		// Call all listeners for the specific object
+		if (p->obj1->collisionListeners)
+		{
+			for (n = p->obj1->collisionListeners->first; n != NULL; n = n->next)
+			{
+				cb = (CollisionCallback*)n->item;
+				cb->func(cb->data, p);
+			}	
+		}
+
 	}
 }
 
-void Logic_addUpdateCallback(void (*func)(void* data, Time t), void* data)
+void Logic_addUpdateCallback(UpdateCallback* callback)
 {
-	_UpdateCallback* callback = (_UpdateCallback*)malloc(sizeof(_UpdateCallback));
-	
-	assert(func);
-	callback->func = func;
-	callback->data = data;
-
 	LinkedList_addLast(update_callbackList, callback);
 }
 
 void Logic_update(Time t)
 {	
-	_UpdateCallback* callback;
+	UpdateCallback* callback;
 	Node* p = update_callbackList->first; 
 	for (;p != NULL; p = p->next)
 	{
-		callback = (_UpdateCallback*)p->item;
+		callback = (UpdateCallback*)p->item;
 		callback->func(callback->data, t);
 	}	
 }

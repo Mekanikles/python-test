@@ -12,7 +12,6 @@ class _Thread():
 class _Scheduler():
     def __init__(self):
         self._runningThreads = deque()
-        self._sleepingThreads = []
         
     def runFrame(self, currentTime):
         for i in range(len(self._runningThreads)):
@@ -20,8 +19,8 @@ class _Scheduler():
                 thread = self._runningThreads[0]
                 if (currentTime >= thread.nexttick):
                     sleep = thread.generator.next()
-                if (sleep > 0):
-                    thread.nexttick = currentTime + sleep
+                    if (sleep > 0):
+                        thread.nexttick = currentTime + sleep
                 self._runningThreads.rotate(-1)
             except StopIteration:
                 del self._runningThreads[0]
@@ -63,7 +62,7 @@ class GameObject(sage.GameObject):
     
     def collidesWith(obj1, obj2):
         return sage.objectsColliding(obj1, obj2)
-       
+
 def initialize():
     # Import Psyco if available
     try:
@@ -72,8 +71,9 @@ def initialize():
     except ImportError:
         pass
     sage.initialize()
-    sage.registerUpdateFunction(scheduler.runFrame)
+    sage.registerUpdateListener(scheduler.runFrame)
 
+    
 def start():
     sage.run()
     
@@ -81,19 +81,37 @@ def cleanup():
     sage.terminate()
 
 
-
 def runThread(function):
     scheduler.addThread(_Thread(function))
 
-def addObject(object):
-    sage.addObject(object)
+def addObject(object, type):
+    sage.addObject(object, type)
     
 def removeObject(object):
     sage.removeObject(object)
     
-def listenForControllerInput(object):
+def listenForControllerInput(function):
     filtr = sage.InputData(0,0,0)
-    sage.registerInputListener(object, filtr)
-    
+    sage.registerInputListener(function, filtr)
 
-# Scheduler running related functions.
+def listenForCollisionOnObject(function, object):
+    filtr = sage.CollisionData(-1, -1, object, 0)
+    sage.registerCollisionListener(function, filtr)
+
+def listenForCollisionBetweenObjects(function, object1, object2):
+    filtr = sage.CollisionData(-1, -1, object1, object2)
+    sage.registerCollisionListener(function, filtr)
+
+def listenForCollisionOnType(function, type):
+    filtr = sage.CollisionData(type, -1, 0, 0)
+    sage.registerCollisionListener(function, filtr)
+    
+def listenForCollisionBetweenTypes(function, type1, type2):
+    filtr = sage.CollisionData(type1, type2, 0, 0)
+    sage.registerCollisionListener(function, filtr)
+
+def enableCollision(type1, type2):
+    sage.enableCollisionCheck(type1, type2)
+
+def createNewObjectType():
+    return creatNewObjectType()

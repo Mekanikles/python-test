@@ -19,7 +19,8 @@ void Node_destroy(Node* node)
   free(node);
 }
 
-LinkedList* LinkedList_new() {
+LinkedList* LinkedList_new() 
+{
   LinkedList* new_list;
 
   new_list = malloc(sizeof(LinkedList));
